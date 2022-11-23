@@ -3,21 +3,20 @@ import sys
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QWidget
 
-from addEditCoffeeForm import Ui_MainWindow_sec
-from design import Ui_MainWindow
+from PyQt5 import uic
 
 
-class AnotherWindow(QWidget, Ui_MainWindow_sec):
+class AnotherWindow(QMainWindow):
     def __init__(self):
-        super().__init__()
-        self.setupUi(self)
+        super(AnotherWindow, self).__init__()
+        uic.loadUi('addEditCoffeeForm.ui', self)
         self.pushButton.clicked.connect(self.change)
         self.con = sqlite3.connect("cofee.sqlite")
         self.cur = self.con.cursor()
 
     def change(self):
         info = self.lineEdit.text().split()
-        if info:
+        if len(info) == 7:
             if int(info[0]) in [elem[0] for elem in self.cur.execute("""SELECT id FROM info""").fetchall()]:
                 self.cur.execute(
                     f'UPDATE info SET name = "{info[1]}", degree = "{info[2]}", type = "{info[3]}", taste = "{info[4]}", price = "{info[5]}", size = "{info[6]}" WHERE id = "{info[0]}"')
@@ -29,10 +28,10 @@ class AnotherWindow(QWidget, Ui_MainWindow_sec):
         self.close()
 
 
-class MainWindow(QMainWindow, Ui_MainWindow):
+class MainWindow(QMainWindow):
     def __init__(self):
-        super().__init__()
-        self.setupUi(self)
+        super(MainWindow, self).__init__()
+        uic.loadUi('design.ui', self)
         self.con = sqlite3.connect("cofee.sqlite")
         self.cur = self.con.cursor()
         self.tableWidget.setColumnCount(7)
@@ -41,8 +40,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButton.clicked.connect(self.show_new_window)
 
     def update(self):
+        self.tableWidget.setColumnCount(0)
+        self.tableWidget.setRowCount(0)
+        self.tableWidget.setColumnCount(7)
+        self.tableWidget.setRowCount(0)
         self.tableWidget.setHorizontalHeaderLabels(['id', 'name', 'degree', 'type', 'taste', 'price','size'])
         res = self.cur.execute("""SELECT id, name, degree, type, taste, price, size FROM info""").fetchall()
+
         for i, row in enumerate(res):
             tmp = i
             self.tableWidget.setRowCount(
